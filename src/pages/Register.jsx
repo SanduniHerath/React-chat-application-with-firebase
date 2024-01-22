@@ -4,9 +4,11 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db, storage } from "../firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { doc, setDoc } from "firebase/firestore";
+import { useNavigate } from 'react-router-dom'
 
 const Register = () => {
-  const [err,setErr] = useState(false)
+  const [err,setErr] = useState(false);
+  const navigate = useNavigate()
 
   const handleSubmit = async(e)=>{
     e.preventDefault()
@@ -26,10 +28,12 @@ const uploadTask = uploadBytesResumable(storageRef, file);
 
 uploadTask.on(
   (error) => {
+    console.error("Upload Error", error);
     setErr(true);
   }, 
-  () => {
-    getDownloadURL(uploadTask.snapshot.ref).then( async(downloadURL) => {
+   () => {
+    
+    getDownloadURL(storageRef).then( async(downloadURL) => {
       await updateProfile(res.user,{
         displayName,
         photoURL:downloadURL
@@ -42,6 +46,7 @@ uploadTask.on(
       });
 
       await setDoc(doc(db, "userChats", res.user.uid), {});
+      navigate("/");
     });
   }
 );
